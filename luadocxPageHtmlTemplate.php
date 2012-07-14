@@ -52,7 +52,13 @@
           <?php
           foreach ($moduleDocs as $offset => $moduleDoc)
           {
-            echo Markdown($moduleDoc) . "\n<br />\n\n";
+            $doc = Markdown($moduleDoc) . "\n<br />\n\n";
+            foreach ($modules as $module)
+            {
+              $link = sprintf('<a href="%s">%s</a>', $module['outputFilename'], $module['moduleName']);
+              $doc = str_replace($module['moduleName'], $link, $doc);
+            }
+            echo $doc;
           }
           ?>
 
@@ -105,7 +111,15 @@
 
             <dd class="<?php echo $class; ?>">
 
-            <?php echo Markdown($function['doc']); ?>
+            <?php
+            $doc = Markdown($function['doc']);
+            foreach ($modules as $module)
+            {
+              $link = sprintf('<a href="%s">%s</a>', $module['outputFilename'], $module['moduleName']);
+              $doc = str_replace($module['moduleName'], $link, $doc);
+            }
+            echo $doc;
+            ?>
 
             </dd>
 
