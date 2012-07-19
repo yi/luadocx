@@ -2,6 +2,61 @@
 
 require(__DIR__ . "/luadocxMarkdown.php");
 
+function makeCrossReferencesImpl($doc, $modules)
+{
+    foreach ($modules as $module)
+    {
+      $link = sprintf('<a href="%s">%s</a>', $module['outputFilename'], $module['moduleName']);
+      $doc = str_replace($module['moduleName'], $link, $doc);
+    }
+
+    $doc = str_replace('[BR]', "<br/>\n", $doc);
+    return $doc;
+}
+
+function makeCrossReferences($doc, $modules)
+{
+    $pCodeBegin = "/<pre><code>/";
+    $pCodeEnd = "/<\\/code><\\/pre>/";
+
+    $matchesBegin = null;
+    $matchesEnd = null;
+    preg_match_all($pCodeBegin, $doc, $matchesBegin, PREG_OFFSET_CAPTURE);
+    preg_match_all($pCodeEnd, $doc, $matchesEnd, PREG_OFFSET_CAPTURE);
+    $offset = 0;
+    $result = array();
+
+    if (isset($matchesBegin[0]))
+    {
+        $matchesBegin = $matchesBegin[0];
+    }
+    if (isset($matchesEnd[0]))
+    {
+        $matchesEnd = $matchesEnd[0];
+    }
+
+    for ($i = 0; $i < count($matchesBegin); $i++)
+    {
+        $begin = $matchesBegin[$i][1];
+        $end = $matchesEnd[$i][1];
+
+        $prefix = substr($doc, $offset, $begin - $offset);
+        $result[] = makeCrossReferencesImpl($prefix, $modules);
+
+        $begin += 11;
+        $code = substr($doc, $begin, $end - $begin - 1);
+        $result[] = '<pre><code class="lua">' . $code;
+        $offset = $end;
+    }
+    $suffix = substr($doc, $offset);
+    if (strlen($suffix) > 0)
+    {
+        $result[] = makeCrossReferencesImpl($suffix, $modules);
+    }
+
+    return implode("\n", $result);
+}
+
 class FileParser
 {
     private $title           = "";
@@ -72,8 +127,8 @@ class FileParser
             // 查找函数定义
             for ($i = 0; $i < count($this->parseFunctionArray); $i++)
             {
-                $p_func = $this->parseFunctionArray[$i];
-                if (preg_match($p_func, $contents, $matches, PREG_OFFSET_CAPTURE, $offset) != 0)
+                $pFunc = $this->parseFunctionArray[$i];
+                if (preg_match($pFunc, $contents, $matches, PREG_OFFSET_CAPTURE, $offset) != 0)
                 {
                     if ($matches[0][1] >= $offset && $matches[0][1] < $nextOffset)
                     {

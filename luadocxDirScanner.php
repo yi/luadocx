@@ -85,6 +85,8 @@ class DirScanner
         }
 
         copy(__DIR__ . DS . 'luadocx.css', $this->outputDir . DS . 'luadocx.css');
+        copy(__DIR__ . DS . 'monokai.css', $this->outputDir . DS . 'monokai.css');
+        copy(__DIR__ . DS . 'highlight.pack.js', $this->outputDir . DS . 'highlight.pack.js');
         print("copy css file.\n");
         print("\n");
 

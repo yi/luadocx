@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="luadocx.css" type="text/css" />
 <title><?php echo htmlspecialchars($title ? sprintf('%s - %s', $title, $moduleName) : $moduleName); ?></title>
+<link rel="stylesheet" href="monokai.css">
+<script src="highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
   <div id="container">
@@ -24,21 +27,17 @@
 
           <h2>Modules</h2>
           <ul>
-            <?php
-            foreach ($modules as $module):
-            if ($module['moduleName'] == $moduleName):
-            ?>
-
+<?php
+foreach ($modules as $module):
+if ($module['moduleName'] == $moduleName):
+?>
             <li><strong><?php echo htmlspecialchars($module['moduleName']); ?></strong></li>
-
-            <?php else: ?>
-
+<?php else: ?>
             <li><a href="<?php echo $module['outputFilename']; ?>"><?php echo htmlspecialchars($module['moduleName']); ?></a></li>
-
-            <?php
-            endif;
-            endforeach;
-            ?>
+<?php
+endif;
+endforeach;
+?>
           </ul>
 
         </td> <!-- navigation -->
@@ -49,18 +48,13 @@
 
           <!-- BEGIN module doc -->
 
-          <?php
-          foreach ($moduleDocs as $offset => $moduleDoc)
-          {
-            $doc = Markdown($moduleDoc) . "\n<br />\n\n";
-            foreach ($modules as $module)
-            {
-              $link = sprintf('<a href="%s">%s</a>', $module['outputFilename'], $module['moduleName']);
-              $doc = str_replace($module['moduleName'], $link, $doc);
-            }
-            echo $doc;
-          }
-          ?>
+<?php
+foreach ($moduleDocs as $offset => $moduleDoc)
+{
+  $doc = makeCrossReferences(Markdown($moduleDoc), $modules) . "\n<br />\n\n";
+  echo $doc;
+}
+?>
 
           <!-- END module doc -->
 
@@ -69,20 +63,20 @@
           <h2><a href="#Functions">Functions</a></h2>
           <table class="function_list">
 
-          <?php
-          foreach ($functions as $offset => $function):
-          $anchorName = sprintf('anchor_%d', $offset);
-          $indent = (strpos($function['name'], ':')) ? '&nbsp;-&nbsp;&nbsp;' : '';
-          $functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
-          $functionName = str_replace(' ', '&nbsp;', $functionName);
-          ?>
+<?php
+foreach ($functions as $offset => $function):
+$anchorName = sprintf('anchor_%d', $offset);
+$indent = (strpos($function['name'], ':')) ? '&nbsp;-&nbsp;&nbsp;' : '';
+$functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
+$functionName = str_replace(' ', '&nbsp;', $functionName);
+?>
 
             <tr>
               <td class="name" nowrap><?php echo $indent; ?><a href="#<?php echo $anchorName; ?>"><?php echo $functionName; ?></a></td>
               <td class="summary"><?php echo htmlspecialchars($function['description']); ?></td>
             </tr>
 
-          <?php endforeach; ?>
+<?php endforeach; ?>
 
           </table>
 
@@ -96,13 +90,13 @@
           <h2><a name="Functions"></a>Functions</h2>
           <dl class="function">
 
-            <?php
-            foreach ($functions as $offset => $function):
-            $anchorName = sprintf('anchor_%d', $offset);
-            $indent = (strpos($function['name'], ':')) ? '-&nbsp;&nbsp;' : '';
-            $class = (strpos($function['name'], ':')) ? 'member_method' : '';
-            $functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
-            ?>
+<?php
+foreach ($functions as $offset => $function):
+$anchorName = sprintf('anchor_%d', $offset);
+$indent = (strpos($function['name'], ':')) ? '-&nbsp;&nbsp;' : '';
+$class = (strpos($function['name'], ':')) ? 'member_method' : '';
+$functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
+?>
 
             <dt class="<?php echo $class; ?>">
               <?php echo $indent; ?><a name="<?php echo $anchorName; ?>"></a>
@@ -111,19 +105,14 @@
 
             <dd class="<?php echo $class; ?>">
 
-            <?php
-            $doc = Markdown($function['doc']);
-            foreach ($modules as $module)
-            {
-              $link = sprintf('<a href="%s">%s</a>', $module['outputFilename'], $module['moduleName']);
-              $doc = str_replace($module['moduleName'], $link, $doc);
-            }
-            echo $doc;
-            ?>
+<?php
+$doc = makeCrossReferences(Markdown($function['doc']), $modules);
+echo $doc;
+?>
 
             </dd>
 
-            <?php endforeach; ?>
+<?php endforeach; ?>
 
           </dl>
 
