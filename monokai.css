@@ -73,7 +73,9 @@ pre .input_number {
   color: #A6E22E !important;
 }
 
-pre .comment,
+pre .comment {
+  color: #75C19E !important;
+}
 pre .java .annotation,
 pre .python .decorator,
 pre .template_comment,
