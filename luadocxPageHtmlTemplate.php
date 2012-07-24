@@ -20,10 +20,14 @@
             <li><a href="<?php echo $indexFilename; ?>">Index</a></li>
           </ul>
 
+<?php if (!empty($functions)): ?>
+
           <h2>Contents</h2>
           <ul>
             <li><a href="#Functions">Functions</a></li>
           </ul>
+
+<?php endif; ?>
 
           <h2>Modules</h2>
           <ul>
@@ -57,6 +61,8 @@ foreach ($moduleDocs as $offset => $moduleDoc)
 ?>
 
           <!-- END module doc -->
+
+<?php if (!empty($functions)): ?>
 
           <!--  BEGIN functions index -->
 
@@ -117,6 +123,8 @@ echo $doc;
           </dl>
 
           <!-- BEGIN functions details -->
+
+<?php endif; // if (!empty($functions)): ?>
 
       </td> <!-- id="content" -->
 
