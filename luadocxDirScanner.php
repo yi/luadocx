@@ -20,17 +20,6 @@ class DirScanner
         $this->indexModuleName = isset($params['indexModuleName']) ? $params['indexModuleName'] : 'main';
     }
 
-    private function compareTwoModule($one, $two)
-    {
-        $oneDepth = substr_count($one['moduleName'], '.');
-        $twoDepth = substr_count($two['moduleName'], '.');
-        if ($oneDepth == 0 && $twoDepth == 0) return strcmp($one['moduleName'], $two['moduleName']);
-        if ($oneDepth == 0) return -1;
-        if ($twoDepth == 0) return 1;
-
-        return strcmp($one['moduleName'], $two['moduleName']);
-    }
-
     public function execute()
     {
         $paths = $this->getFiles($this->sourceFilesDir);
@@ -84,13 +73,31 @@ class DirScanner
             print("ok\n");
         }
 
-        copy(__DIR__ . DS . 'luadocx.css', $this->outputDir . DS . 'luadocx.css');
-        copy(__DIR__ . DS . 'monokai.css', $this->outputDir . DS . 'monokai.css');
-        copy(__DIR__ . DS . 'highlight.pack.js', $this->outputDir . DS . 'highlight.pack.js');
-        print("copy css file.\n");
+        $this->copyfile('luadocx.css');
+        $this->copyfile('monokai.css');
+        $this->copyfile('highlight.pack.js');
+        $this->copyfile('jquery.min.js');
+        $this->copyfile('jquery.tableofcontents.js');
+        print("copy assets file.\n");
         print("\n");
 
         return true;
+    }
+
+    private function copyfile($filename)
+    {
+        copy(__DIR__ . DS . $filename, $this->outputDir . DS . $filename);
+    }
+
+    private function compareTwoModule($one, $two)
+    {
+        $oneDepth = substr_count($one['moduleName'], '.');
+        $twoDepth = substr_count($two['moduleName'], '.');
+        if ($oneDepth == 0 && $twoDepth == 0) return strcmp($one['moduleName'], $two['moduleName']);
+        if ($oneDepth == 0) return -1;
+        if ($twoDepth == 0) return 1;
+
+        return strcmp($one['moduleName'], $two['moduleName']);
     }
 
     private function getFiles($dir)

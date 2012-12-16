@@ -6,7 +6,25 @@
 <title><?php echo htmlspecialchars($title ? sprintf('%s - %s', $title, $moduleName) : $moduleName); ?></title>
 <link rel="stylesheet" href="monokai.css">
 <script src="highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" charset="utf-8">hljs.initHighlightingOnLoad();</script>
+
+<?php if ($toc): ?>
+<script src="jquery.min.js" type="text/javascript"></script>
+<script src="jquery.tableofcontents.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function(){
+    $("#toc").tableOfContents(
+      "#module_doc",
+      {
+        startLevel:           2,    // H2
+        depth:                3,    // H2 through H3
+        topLinks:             true,
+      }
+    );
+  });
+</script>
+<?php endif; ?>
+
 </head>
 <body>
   <div id="container">
@@ -19,15 +37,6 @@
           <ul>
             <li><a href="<?php echo $indexFilename; ?>">Index</a></li>
           </ul>
-
-<?php if (!empty($functions)): ?>
-
-          <h2>Contents</h2>
-          <ul>
-            <li><a href="#Functions">Functions</a></li>
-          </ul>
-
-<?php endif; ?>
 
           <h2>Modules</h2>
           <ul>
@@ -50,7 +59,11 @@ endforeach;
 
           <h1>Module <code><?php echo htmlspecialchars($moduleName); ?></code></h1>
 
+          <?php if ($toc): ?><ul id="toc"></ul><?php endif; ?>
+
           <!-- BEGIN module doc -->
+
+          <div id="module_doc">
 
 <?php
 foreach ($moduleDocs as $offset => $moduleDoc)
@@ -60,21 +73,35 @@ foreach ($moduleDocs as $offset => $moduleDoc)
 }
 ?>
 
+          </div>
+
           <!-- END module doc -->
 
 <?php if (!empty($functions)): ?>
 
           <!--  BEGIN functions index -->
 
-          <h2><a href="#Functions">Functions</a></h2>
+          <h2>Functions</h2>
           <table class="function_list">
 
 <?php
+$anchors = array();
 foreach ($functions as $offset => $function):
-$anchorName = sprintf('anchor_%d', $offset);
-$indent = (strpos($function['name'], ':')) ? '&nbsp;-&nbsp;&nbsp;' : '';
-$functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
-$functionName = str_replace(' ', '&nbsp;', $functionName);
+  $fn = str_replace(array('.'), array('_'), $function['name']);
+  if (isset($anchors[$fn]))
+  {
+    $anchors[$fn]++;
+    $anchorName = sprintf('anchor_%s_%d', $fn, $anchors[$fn]);
+  }
+  else
+  {
+    $anchorName = sprintf('anchor_%s', $fn, $offset);
+    $anchors[$fn] = 1;
+  }
+  $functions[$offset]['anchorName'] = $anchorName;
+  $indent = (strpos($function['name'], ':')) ? '&nbsp;-&nbsp;&nbsp;' : '';
+  $functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
+  $functionName = str_replace(' ', '&nbsp;', $functionName);
 ?>
 
             <tr>
@@ -93,20 +120,21 @@ $functionName = str_replace(' ', '&nbsp;', $functionName);
 
           <!-- BEGIN functions details -->
 
-          <h2><a name="Functions"></a>Functions</h2>
+          <h2>Functions</h2>
           <dl class="function">
 
 <?php
 foreach ($functions as $offset => $function):
-$anchorName = sprintf('anchor_%d', $offset);
-$indent = (strpos($function['name'], ':')) ? '-&nbsp;&nbsp;' : '';
-$class = (strpos($function['name'], ':')) ? 'member_method' : '';
-$functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
+  $fn = str_replace(array('.'), array('_'), $function['name']);
+  $anchorName = $functions[$offset]['anchorName'];
+  $indent = (strpos($function['name'], ':')) ? '-&nbsp;&nbsp;' : '';
+  $class = (strpos($function['name'], ':')) ? 'member_method' : '';
+  $functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
 ?>
 
             <dt class="<?php echo $class; ?>">
               <?php echo $indent; ?><a name="<?php echo $anchorName; ?>"></a>
-              <strong><?php echo $functionName; ?></strong>
+              <h3><?php echo $functionName; ?></h3>
             </dt>
 
             <dd class="<?php echo $class; ?>">

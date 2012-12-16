@@ -28,7 +28,6 @@ del,ins {
     text-decoration: none;
 }
 li {
-    list-style: bullet;
     margin: 4px 0 4px 20px;
 }
 caption,th {
@@ -60,7 +59,8 @@ input,button,textarea,select,optgroup,option {
     font-style: inherit;
     font-weight: inherit;
 }
-input,button,textarea,select {*font-size:100%;
+input,button,textarea,select {
+    font-size:100%;
 }
 /* END RESET */
 
@@ -77,7 +77,7 @@ body, p, td, th { font-size: 0.95em; line-height: 1.2em;}
 
 p, ul { margin: 10px 0 0 10px;}
 
-strong { font-weight: bold;}
+strong { font-weight: bold; color: #a42020;}
 
 em { font-style: italic;}
 
@@ -190,6 +190,18 @@ table.index td { text-align: left; vertical-align: top; }
     background-color: #ffffff;
 }
 
+#module_doc h2 {
+    font-size: 1.4em;
+    margin-top: 40px;
+}
+
+#module_doc h3 {
+    font-size: 1.2em;
+    margin-top: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px dotted #ddd;
+}
+
 #about {
     clear: both;
     padding: 5px;
@@ -242,17 +254,33 @@ table.module_list td.summary { width: 100%; }
 
 
 table.function_list {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #cccccc;
-    border-collapse: collapse;
+    margin: 0.5em;
 }
+
 table.function_list td {
-    border-width: 1px;
-    padding: 3px;
-    border-style: solid;
-    border-color: #cccccc;
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    line-height: 1.5em;
 }
+
+
+table.function_list tr:first-child td {
+    border: 1px solid #ccc;
+}
+
+table.function_list tr:last-child td {
+    border: 1px solid #ccc;
+}
+
+table.function_list td:first-child {
+    border: 1px solid #ccc;
+}
+
+table.function_list td:last-child {
+    border: 1px solid #ccc;
+}
+
+
 table.function_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
 table.function_list td.summary { width: 100%; }
 
@@ -261,8 +289,67 @@ dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: 1.2em;}
 dd.member_method, dt.member_method {padding-left: 1em;}
 
+table {
+    margin: 1em 2em 2em 1em;
+}
+
+td, th {
+    padding: 0.5em 1em 0.5em 1em;
+}
+
+th {
+    line-height: 1.5em;
+    font-size: 110%;
+    background-color: #eee;
+    border: 1px solid #ccc
+}
+
+td {
+    line-height: 1.2em;
+    border: 1px solid #eee;
+}
+
+tr {
+    border-top: 1px solid #eee;
+}
+
+tr:first-child td {
+    border-top: none;
+}
+
+tr:last-child td {
+    border-bottom: 1px solid #ccc;
+}
+
+td:first-child {
+    border-left: 1px solid #ccc;
+}
+
+td:last-child {
+    border-right: 1px solid #ccc;
+}
+
 /* stop sublists from having initial vertical space */
 ul ul { margin-top: 0px; }
 ol ul { margin-top: 0px; }
 ol ol { margin-top: 0px; }
 ul ol { margin-top: 0px; }
+
+#toc {
+    float: right;
+    font-size: 10pt;
+    width: 240px;
+    padding: 10px 10px 10px 10px;
+    background: #efffb1;
+    border: solid 1px #ccd136;
+    margin: 0 0 10px 15px;
+}
+
+a.toc-top-link {
+    margin-left: 20px;
+    width: 30px;
+    padding: 4px;
+    background: #eee;
+    font-size: 8pt;
+    text-align: center;
+}

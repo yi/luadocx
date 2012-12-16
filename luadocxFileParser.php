@@ -4,13 +4,6 @@ require(__DIR__ . "/luadocxMarkdown.php");
 
 function makeCrossReferencesImpl($doc, $modules)
 {
-    foreach ($modules as $module)
-    {
-      $link = sprintf('<a href="%s">%s</a>', $module['outputFilename'], $module['moduleName']);
-      $doc = str_replace($module['moduleName'], $link, $doc);
-    }
-
-    $doc = str_replace('[BR]', "<br/>\n", $doc);
     return $doc;
 }
 
@@ -69,7 +62,8 @@ class FileParser
     private $moduleTags         = array();
     private $functions          = array();
     private $moduleName         = '';
-    private $indexFilename    = '';
+    private $indexFilename      = '';
+    private $toc                = false;
 
     public function __construct($title, $moduleName, $indexFilename)
     {
@@ -86,6 +80,13 @@ class FileParser
     public function parse($filename)
     {
         $contents = file_get_contents($filename);
+        $count = 0;
+        $contents = preg_replace("/^\\[TOC\\]$/m", "", $contents, -1, $count);
+
+        if ($count > 0)
+        {
+            $this->toc = true;
+        }
 
         $this->moduleDocs = array();
         $this->functions = array();
@@ -139,14 +140,28 @@ class FileParser
                         {
                             $functionName = substr($functionName, 2);
                         }
-                        $this->functions[$key] = array(
-                            'description' => $this->findFirstLine($doc),
-                            'tags'        => $this->findTags($doc),
-                            'doc'         => $doc,
-                            'name'        => $functionName,
-                            'type'        => $i,
-                            'params'      => $matches[2][0],
-                        );
+                        $tags = $this->findTags($doc);
+                        $ignore = false;
+                        foreach ($tags as $tag)
+                        {
+                            if ($tag['name'] == 'ignore')
+                            {
+                                $ignore = true;
+                                break;
+                            }
+                        }
+
+                        if (!$ignore)
+                        {
+                            $this->functions[$key] = array(
+                                'description' => $this->findFirstLine($doc),
+                                'tags'        => $tags,
+                                'doc'         => $doc,
+                                'name'        => $functionName,
+                                'type'        => $i,
+                                'params'      => $matches[2][0],
+                            );
+                        }
                         $doc = null;
                     }
 
@@ -171,6 +186,7 @@ class FileParser
         $moduleDocs      = $this->moduleDocs;
         $functions       = $this->functions;
         $indexFilename   = $this->indexFilename;
+        $toc             = $this->toc;
 
         ob_start();
         require(__DIR__ . '/luadocxPageHtmlTemplate.php');
@@ -197,11 +213,11 @@ class FileParser
             if ($line == "") continue;
 
             $matches = array();
-            if (preg_match("/\@(\w+) ([\w\d_,\. ]+)/i", $line, $matches) == 0) continue;
+            if (preg_match("/\@(\w+)([ \t]+[\w\d_,\. ]+)?/i", $line, $matches) == 0) continue;
 
             $tag = array(
                 "name" => $matches[1],
-                "value" => $matches[2]
+                "value" => isset($matches[2]) ? $matches[2] : ""
             );
             $tags[] = $tag;
         }
@@ -234,6 +250,10 @@ class FileParser
             }
             $result[] = $line;
         }
-        return implode("\n", $result);
+
+        $doc = implode("\n", $result);
+        $doc = str_replace('[BR]', '<br />', $doc);
+
+        return $doc;
     }
 }
