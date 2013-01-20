@@ -63,7 +63,6 @@ class FileParser
     private $functions          = array();
     private $moduleName         = '';
     private $indexFilename      = '';
-    private $toc                = false;
 
     public function __construct($title, $moduleName, $indexFilename)
     {
@@ -80,13 +79,6 @@ class FileParser
     public function parse($filename)
     {
         $contents = file_get_contents($filename);
-        $count = 0;
-        $contents = preg_replace("/^\\[TOC\\]$/m", "", $contents, -1, $count);
-
-        if ($count > 0)
-        {
-            $this->toc = true;
-        }
 
         $this->moduleDocs = array();
         $this->functions = array();
@@ -186,7 +178,6 @@ class FileParser
         $moduleDocs      = $this->moduleDocs;
         $functions       = $this->functions;
         $indexFilename   = $this->indexFilename;
-        $toc             = $this->toc;
 
         ob_start();
         require(__DIR__ . '/luadocxPageHtmlTemplate.php');
@@ -252,7 +243,6 @@ class FileParser
         }
 
         $doc = implode("\n", $result);
-        $doc = str_replace('[BR]', '<br />', $doc);
 
         return $doc;
     }

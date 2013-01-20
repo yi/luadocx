@@ -1,2 +1,2 @@
 #!/bin/sh
-php ../luadocx.php -r qeeplay.api -i qeeplay.api.GameNetwork source/ doc/
+php ../luadocx.php -r api -i api.EventProtocol source/ doc/

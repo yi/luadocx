@@ -1,13 +1,26 @@
 <?php
 
-define('LUADOCX_VERSION', '1.0');
+define('LUADOCX_VERSION', '1.1');
 define('DS', DIRECTORY_SEPARATOR);
 
 function help()
 {
     print <<<EOT
 
-Usage: luadocx [-t title] [-r root_module_name] [-i index_module_name] source_files_dir output_dir
+Usage: luadocx [-t title] [-r root] [-i index] [-x exclude] source_files_dir output_dir
+
+Parameters:
+    -t title of the documents
+    -r root module name
+    -i index module name
+    -x excludes
+
+Examples:
+
+    luadocx -t "My App Docuemtns" -r MyApp -i MyApp.main MyApp/ docs/
+
+    luadocx -r MyApp -x "MyApp.tests,MyApp.data" MyApp/ docs/
+
 
 
 EOT;
@@ -38,6 +51,12 @@ while ($arg = array_shift($argv))
     if ($arg == '-i')
     {
         $params['indexModuleName'] = array_shift($argv);
+        continue;
+    }
+
+    if ($arg == '-x')
+    {
+        $params['excludes'] = array_shift($argv);
         continue;
     }
 
@@ -73,7 +92,7 @@ if (!is_dir($params['outputDir']))
 }
 $params['outputDir'] = realpath($params['outputDir']);
 
-require(__DIR__ . '/luadocxDirScanner.php');
+require(__DIR__ . '/inc/luadocxDirScanner.php');
 
 $scanner = new DirScanner($params);
 if (!$scanner->execute())

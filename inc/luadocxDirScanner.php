@@ -18,6 +18,22 @@ class DirScanner
         $this->title           = isset($params['title']) ? $params['title'] : '';
         $this->rootModuleName  = isset($params['rootModuleName']) ? $params['rootModuleName'] : '';
         $this->indexModuleName = isset($params['indexModuleName']) ? $params['indexModuleName'] : 'main';
+
+        $excludes = isset($params['excludes']) ? $params['excludes'] : '';
+        $excludes = explode(',', $excludes);
+        foreach ($excludes as $key => $value)
+        {
+            $value = trim($value);
+            if (empty($value))
+            {
+                unset($excludes[$key]);
+            }
+            else
+            {
+                $excludes[$key] = $value;
+            }
+        }
+        $this->excludes = $excludes;
     }
 
     public function execute()
@@ -36,6 +52,19 @@ class DirScanner
             {
                 $moduleName = $this->rootModuleName . '.' . $moduleName;
             }
+
+            $skip = false;
+            foreach ($this->excludes as $key => $value)
+            {
+                $len = strlen($value);
+                if (substr($moduleName, 0, $len) == $value)
+                {
+                    $skip = true;
+                    break;
+                }
+            }
+            if ($skip) continue;
+
             $module = array(
                 'path'           => $path,
                 'filename'       => $filename,
@@ -64,20 +93,18 @@ class DirScanner
 
         foreach ($modules as $module)
         {
-            printf('processing %s ...', $module['moduleName']);
+            printf("create %s\n", $module['moduleName']);
             $parser = new FileParser($this->title, $module['moduleName'], $indexModule['outputFilename']);
             $parser->parse($module['path']);
 
             $outputPath = $this->outputDir . DS . $module['outputFilename'];
             file_put_contents($outputPath, $parser->html($modules));
-            print("ok\n");
+            // print("ok\n");
         }
 
-        $this->copyfile('luadocx.css');
-        $this->copyfile('monokai.css');
-        $this->copyfile('highlight.pack.js');
-        $this->copyfile('jquery.min.js');
-        $this->copyfile('jquery.tableofcontents.js');
+        $this->copyfile('luadocx-style.css');
+        $this->copyfile('luadocx-style-monokai.css');
+        $this->copyfile('luadocx-highlight.min.js');
         print("copy assets file.\n");
         print("\n");
 
