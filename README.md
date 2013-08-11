@@ -4,27 +4,19 @@ Documentation Generator Tool for the Lua language
 
 <br />
 
-### Get Started
-
-~~~ .shell
-Usage: luadocx [-t title] [-r root] [-i index] [-x exclude] source_files_dir output_dir
-
-Parameters:
-    -t title of the documents
-    -r root module name
-    -i index module name
-    -x excludes
 ~~~
 
-<br />
+LuaDocX - Generate documents from Lua source files
 
-### Examples:
 
-~~~ .shell
-$ php luadocx.php -t "My App Docuemtns" -r MyApp -i MyApp.main MyApp/ docs/
-$ php luadocx.php -r MyApp -x "MyApp.tests,MyApp.data" MyApp/ docs/
+-   extract tags (module, class, function) from Lua source files. write to JSON file.
+
+    luadocx extract -c config_file_path source_files_dir json_file_dir
+
+
+-   generate offline HTML docments:
+
+    luadocx generate -c config_file_path json_file_dir html_files_dir
+
+
 ~~~
-
-<br />
-
-See example/doc/index.html

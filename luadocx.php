@@ -1,102 +1,138 @@
 <?php
 
-define('LUADOCX_VERSION', '1.1');
+define('LUADOCX_VERSION', '1.2');
 define('DS', DIRECTORY_SEPARATOR);
 
 function help()
 {
     print <<<EOT
 
-Usage: luadocx [-t title] [-r root] [-i index] [-x exclude] source_files_dir output_dir
+LuaDocX - Generate documents from Lua source files
 
-Parameters:
-    -t title of the documents
-    -r root module name
-    -i index module name
-    -x excludes
 
-Examples:
+-   extract tags (module, class, function) from Lua source files. write to JSON file.
 
-    luadocx -t "My App Docuemtns" -r MyApp -i MyApp.main MyApp/ docs/
+    luadocx extract -c config_file_path source_files_dir json_file_dir
 
-    luadocx -r MyApp -x "MyApp.tests,MyApp.data" MyApp/ docs/
 
+-   generate offline HTML docments:
+
+    luadocx generate -c config_file_path json_file_dir html_files_dir
 
 
 EOT;
 }
 
-if (!isset($argc) || $argc < 3)
+if (!isset($argc) || $argc < 4)
 {
     help();
     return 1;
 }
 
 array_shift($argv);
-$params = array();
+$params = array(
+    'command' => '',
+    'configFilePath' => '',
+    'srcFilesDir' => '',
+    'destDir' => '',
+);
 while ($arg = array_shift($argv))
 {
-    if ($arg == '-t')
+    if ($arg == '-c')
     {
-        $params['title'] = array_shift($argv);
+        $params['configFilePath'] = array_shift($argv);
         continue;
     }
 
-    if ($arg == '-r')
+    if ($arg[0] == '-')
     {
-        $params['rootModuleName'] = array_shift($argv);
-        continue;
+        printf("\nERROR: invalid option %s\n", $arg);
+        help();
+        return 1;
     }
 
-    if ($arg == '-i')
+    if (empty($params['command']))
     {
-        $params['indexModuleName'] = array_shift($argv);
+        $params['command'] = $arg;
         continue;
     }
-
-    if ($arg == '-x')
+    if (empty($params['srcFilesDir']))
     {
-        $params['excludes'] = array_shift($argv);
+        $params['srcFilesDir'] = $arg;
         continue;
     }
-
-    if (empty($params['sourceFilesDir']))
+    if (empty($params['destDir']))
     {
-        $params['sourceFilesDir'] = $arg;
-        continue;
-    }
-
-    if (empty($params['outputDir']))
-    {
-        $params['outputDir'] = $arg;
+        $params['destDir'] = $arg;
     }
 }
 
-if (!is_dir($params['sourceFilesDir']))
+
+// check params
+$commands = array('extract', 'generate');
+if (!in_array($params['command'], $commands))
 {
-    print("\nERROR: Invalid source files dir: " . $params['sourceFilesDir'] . "\n");
+    printf("\nERROR: invalid command %s\n", $params['command']);
     help();
     return 1;
 }
-$params['sourceFilesDir'] = realpath($params['sourceFilesDir']);
 
-if (!is_dir($params['outputDir']))
+if (!is_file($params['configFilePath']))
 {
-    @mkdir($params['outputDir']);
-    if (!is_dir($params['outputDir']))
+    printf("\nERROR: invalid config file path %s\n", $params['configFilePath']);
+    help();
+    return 1;
+}
+$params['configFilePath'] = realpath($params['configFilePath']);
+
+if (!is_dir($params['srcFilesDir']))
+{
+    printf("\nERROR: invalid srcFilesDir %s\n", $params['srcFilesDir']);
+    help();
+    return 1;
+}
+$params['srcFilesDir'] = realpath($params['srcFilesDir']);
+
+if (!is_dir($params['destDir']))
+{
+    @mkdir($params['destDir']);
+    if (!is_dir($params['destDir']))
     {
-        print("\nERROR: Invalid output dir: " . $params['outputDir'] . "\n");
+        printf("\nERROR: invalid destDir %s\n", $params['destDir']);
         help();
         return 1;
     }
 }
-$params['outputDir'] = realpath($params['outputDir']);
+$params['destDir'] = realpath($params['destDir']);
 
-require(__DIR__ . '/inc/luadocxDirScanner.php');
 
-$scanner = new DirScanner($params);
-if (!$scanner->execute())
+// execute
+require_once(__DIR__ . '/inc/Config.php');
+
+$config = new Config($params['configFilePath']);
+if (!$config->isValid())
 {
+    printf("\nERROR: invalid config file %s\n", $params['configFilePath']);
     help();
     return 1;
+}
+
+if ($params['command'] == 'extract')
+{
+    require_once(__DIR__ . '/inc/DirScanner.php');
+    $scanner = new DirScanner($config, $params);
+    $modules = $scanner->execute();
+
+    require_once(__DIR__ . '/inc/MarkdownGenerator.php');
+    $generator = new MarkdownGenerator($config, $modules);
+    $generator->execute($params['destDir']);
+
+    file_put_contents($params['destDir'] . DS . 'modules.json', json_encode($modules));
+}
+else if ($params['command'] == 'generate')
+{
+    $modules = json_decode(file_get_contents($params['srcFilesDir'] . DS . 'modules.json'), true);
+    require_once(__DIR__ . '/inc/LocalHTMLGenerator.php');
+    $generator = new LocalHTMLGenerator($config, $modules);
+    $generator->execute($params['srcFilesDir'], $params['destDir']);
 }

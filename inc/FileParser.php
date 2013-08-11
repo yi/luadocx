@@ -1,59 +1,9 @@
 <?php
 
-require(__DIR__ . "/luadocxMarkdown.php");
-
-function makeCrossReferencesImpl($doc, $modules)
-{
-    return $doc;
-}
-
-function makeCrossReferences($doc, $modules)
-{
-    $pCodeBegin = "/<pre><code>/";
-    $pCodeEnd = "/<\\/code><\\/pre>/";
-
-    $matchesBegin = null;
-    $matchesEnd = null;
-    preg_match_all($pCodeBegin, $doc, $matchesBegin, PREG_OFFSET_CAPTURE);
-    preg_match_all($pCodeEnd, $doc, $matchesEnd, PREG_OFFSET_CAPTURE);
-    $offset = 0;
-    $result = array();
-
-    if (isset($matchesBegin[0]))
-    {
-        $matchesBegin = $matchesBegin[0];
-    }
-    if (isset($matchesEnd[0]))
-    {
-        $matchesEnd = $matchesEnd[0];
-    }
-
-    for ($i = 0; $i < count($matchesBegin); $i++)
-    {
-        $begin = $matchesBegin[$i][1];
-        $end = $matchesEnd[$i][1];
-
-        $prefix = substr($doc, $offset, $begin - $offset);
-        $result[] = makeCrossReferencesImpl($prefix, $modules);
-
-        $begin += 11;
-        $code = substr($doc, $begin, $end - $begin - 1);
-        $result[] = '<pre><code class="lua">' . $code;
-        $offset = $end;
-    }
-    $suffix = substr($doc, $offset);
-    if (strlen($suffix) > 0)
-    {
-        $result[] = makeCrossReferencesImpl($suffix, $modules);
-    }
-
-    return implode("\n", $result);
-}
+require_once(__DIR__ . "/Markdown.php");
 
 class FileParser
 {
-    private $title           = "";
-
     private $parseDocBegin      = "/^[ \t]*\\-\\-\\[\\[\\-\\-$/m";
     private $parseDocEnd        = "/^[ \t]*\\]\\]$/m";
     private $parseFunctionArray = array();
@@ -61,15 +11,9 @@ class FileParser
     private $moduleDocs         = array();
     private $moduleTags         = array();
     private $functions          = array();
-    private $moduleName         = '';
-    private $indexFilename      = '';
 
-    public function __construct($title, $moduleName, $indexFilename)
+    public function __construct()
     {
-        $this->title         = $title;
-        $this->moduleName    = $moduleName;
-        $this->indexFilename = $indexFilename;
-
         $functionName               = "([\w\d_:\.]+)";
         $functionParams             = "([\w\d_,\. ]*)";
         $this->parseFunctionArray[] = "/function[ \t]+${functionName}[ \t]*\(${functionParams}\)/i";
@@ -87,7 +31,6 @@ class FileParser
         $len = strlen($contents);
         while ($offset < $len)
         {
-            // 取得文档开始位置
             $matches = array();
             if (preg_match($this->parseDocBegin, $contents, $matches, PREG_OFFSET_CAPTURE, $offset) == 0)
             {
@@ -96,7 +39,6 @@ class FileParser
             $offset = $matches[0][1];
             // printf("comment begin: %d\n", $offset);
 
-            // 取得文档结束位置
             if (preg_match($this->parseDocEnd, $contents, $matches, PREG_OFFSET_CAPTURE, $offset) == 0)
             {
                 break;
@@ -107,7 +49,6 @@ class FileParser
             $offset = $offsetEnd;
             // printf("comment end: %d\n", $offset);
 
-            // 取得下一个文档的开始位置
             $matchesNext = array();
             $nextOffset = $len;
             if (preg_match($this->parseDocBegin, $contents, $matchesNext, PREG_OFFSET_CAPTURE, $offset) != 0)
@@ -116,8 +57,6 @@ class FileParser
             }
             // printf("next comment begin: %d\n", $nextOffset);
 
-            // 函数定义必须位于当前文档的结束位置和下一个文档的开始位置之间
-            // 查找函数定义
             for ($i = 0; $i < count($this->parseFunctionArray); $i++)
             {
                 $pFunc = $this->parseFunctionArray[$i];
@@ -132,7 +71,7 @@ class FileParser
                         {
                             $functionName = substr($functionName, 2);
                         }
-                        $tags = $this->findTags($doc);
+                        $tags = $this->extractTags($doc);
                         $ignore = false;
                         foreach ($tags as $tag)
                         {
@@ -145,7 +84,7 @@ class FileParser
 
                         if (!$ignore)
                         {
-                            $this->functions[$key] = array(
+                            $this->functions[] = array(
                                 'description' => $this->findFirstLine($doc),
                                 'tags'        => $tags,
                                 'doc'         => $doc,
@@ -164,24 +103,14 @@ class FileParser
             if ($doc)
             {
                 $this->moduleDocs[] = $doc;
-                $tags = $this->findTags($doc);
+                $tags = $this->extractTags($doc);
                 $this->moduleTags = array_merge($this->moduleTags, $tags);
                 // printf("comments count: %d\n", count($moduleDocs));
             }
         }
-    }
 
-    public function html($modules)
-    {
-        $title           = $this->title;
-        $moduleName      = $this->moduleName;
-        $moduleDocs      = $this->moduleDocs;
-        $functions       = $this->functions;
-        $indexFilename   = $this->indexFilename;
-
-        ob_start();
-        require(__DIR__ . '/luadocxPageHtmlTemplate.php');
-        return ob_get_clean();
+        return array('moduleDocs' => $this->moduleDocs, 'moduleTags' => $this->moduleTags,
+            'functions' => $this->functions);
     }
 
     private function findFirstLine($contents)
@@ -194,26 +123,90 @@ class FileParser
         return "";
     }
 
-    private function findTags($contents)
+    private function extractTags(& $contents)
     {
+        $firstParam = true;
+        $firstReturn = true;
         $tags = array();
         $lines = explode("\n", $contents);
-        for ($i = 0; $i < count($lines); $i++)
+        $count = count($lines);
+        for ($i = 0; $i < $count; $i++)
         {
             $line = trim($lines[$i]);
-            if ($line == "") continue;
+            if ($line == '') continue;
 
             $matches = array();
             if (preg_match("/\@(\w+)([ \t]+[\w\d_,\. ]+)?/i", $line, $matches) == 0) continue;
 
             $tag = array(
                 "name" => $matches[1],
-                "value" => isset($matches[2]) ? $matches[2] : ""
+                "value" => isset($matches[2]) ? trim($matches[2]) : ''
             );
             $tags[] = $tag;
+
+            $line = $this->processTag($tag, $line);
+            $lines[$i] = $line;
+
+            if ($firstParam && ($tag['name'] == 'param' || $tag['name'] == 'optional'))
+            {
+                $a = array_slice($lines, 0, $i);
+                array_push($a, '');
+                array_push($a, '### Parameters');
+                array_push($a, '');
+                $lines = array_merge($a, array_slice($lines, $i));
+                $firstParam = false;
+                $count += 3;
+            }
+
+            if ($firstReturn && $tag['name'] == 'return')
+            {
+                $a = array_slice($lines, 0, $i);
+                array_push($a, '');
+                array_push($a, '### Returns');
+                array_push($a, '');
+                $lines = array_merge($a, array_slice($lines, $i));
+                $firstParam = false;
+                $count += 3;
+            }
+
         }
 
+        $contents = trim(implode("\n", $lines));
+
         return $tags;
+    }
+
+    private function processTag($tag, $line)
+    {
+        switch ($tag['name'])
+        {
+            case 'param':
+                $parts = explode(' ', $tag['value']);
+                if (!empty($parts[1]))
+                {
+                    $parts[1] = '**' . $parts[1] . '**';
+                }
+                return '-   ' . implode(' ', $parts);
+
+            case 'optional':
+                $parts = explode(' ', $tag['value']);
+                if (!empty($parts[1]))
+                {
+                    return trim(sprintf('-   [_optional %s **%s**_] %s', $parts[0], $parts[1], implode(' ', array_slice($parts, 2))));
+                }
+                else
+                {
+                    return trim(sprintf('-   [_optional **%s**_]', $parts[0]));
+                }
+
+            case 'return':
+                return '-   ' . trim($tag['value']);
+
+            case 'example':
+                return '### Example';
+        }
+
+        return $line;
     }
 
     private function formatDoc($doc)
@@ -242,7 +235,7 @@ class FileParser
             $result[] = $line;
         }
 
-        $doc = implode("\n", $result);
+        $doc = trim(implode("\n", $result));
 
         return $doc;
     }
