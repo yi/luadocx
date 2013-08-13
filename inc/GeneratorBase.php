@@ -27,17 +27,17 @@ abstract class GeneratorBase
         usort($this->modules, array($this, 'compareTwoModule'));
     }
 
+    protected function getModuleFilename($moduleName, $extname)
+    {
+        return strtolower(str_replace($this->chars, '_', $moduleName)) . $extname;
+    }
+
     protected function getModulePath($destDir, $moduleName, $extname)
     {
-        return $destDir . DS . strtolower(str_replace($this->chars, '_', $moduleName)) . $extname;
+        return $destDir . DS . $this->getModuleFilename($moduleName, $extname);
     }
 
-    protected function getModuleIndexPath($destDir, $moduleName, $extname)
-    {
-        return $destDir . DS . strtolower(str_replace($this->chars, '_', $moduleName)) . '_index' . $extname;
-    }
-
-    protected function getModuleFunctionPath($destDir, $moduleName, $functionName, $extname)
+    protected function getModuleFunctionFilename($moduleName, $functionName, $extname)
     {
         $parts = explode('.', $moduleName);
         $last = $parts[count($parts) - 1];
@@ -48,8 +48,14 @@ abstract class GeneratorBase
             array_shift($parts);
             $functionName = implode('.', $parts);
         }
-        return $destDir . DS . strtolower(str_replace($this->chars, '_', $moduleName . '_function_' . $functionName))
+        return strtolower(str_replace($this->chars, '_', $moduleName . '_function_' . $functionName))
         . $extname;
+    }
+
+    protected function getModuleFunctionPath($destDir, $moduleName, $functionName, $extname)
+    {
+        return $destDir . DS . $this->getModuleFunctionFilename($moduleName,
+            $functionName, $extname);
     }
 
     protected function compareTwoModule($one, $two)

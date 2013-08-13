@@ -127,7 +127,8 @@ if ($params['command'] == 'extract')
     $generator = new MarkdownGenerator($config, $modules);
     $generator->execute($params['destDir']);
 
-    file_put_contents($params['destDir'] . DS . 'modules.json', json_encode($modules));
+    $structure = $generator->extractStructure();
+    file_put_contents($params['destDir'] . DS . 'structure.json', json_encode($structure));
 }
 else if ($params['command'] == 'generate')
 {

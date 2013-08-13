@@ -17,7 +17,7 @@ class MarkdownGenerator extends GeneratorBase
             ob_start();
             require(__DIR__ . '/../template/apidoc_module_markdown.php');
             $contents = ob_get_clean();
-            file_put_contents($this->getModuleIndexPath($destDir, $moduleName, '.md'), $contents);
+            file_put_contents($this->getModulePath($destDir, $moduleName, '.md'), $contents);
 
             // create module functions page
             foreach ($module['tags']['functions'] as $function)
@@ -28,5 +28,36 @@ class MarkdownGenerator extends GeneratorBase
                 file_put_contents($this->getModuleFunctionPath($destDir, $moduleName, $function['name'], '.md'), $contents);
             }
         }
+    }
+
+    public function extractStructure()
+    {
+        $structure = array();
+        $count = count($this->modules);
+        for ($i = 0; $i < $count; $i++)
+        {
+            $module = $this->modules[$i];
+            $moduleName = $module['moduleName'];
+            $moduleFilename = $moduleName . '.md';
+            $moduleStructure = array(
+                'name' => $moduleName,
+                'filename' => $this->getModuleFilename($moduleName, '.md'),
+            );
+
+            $functionsStructure = array();
+
+            foreach ($module['tags']['functions'] as $function)
+            {
+                $functionsStructure[] = array(
+                    'name' => $function['name'],
+                    'filename' => $this->getModuleFunctionFilename($moduleName, $function['name'], '.md'),
+                );
+            }
+
+            $moduleStructure['functions'] = $functionsStructure;
+            $structure[] = $moduleStructure;
+        }
+
+        return $structure;
     }
 }
