@@ -15,14 +15,14 @@ class LocalHTMLGenerator extends GeneratorBase
         $indexFilename = '';
         foreach ($modules as $key => $module)
         {
-            if ($module['moduleName'] == $this->config->indexModule)
+            if ($module['name'] == $this->config->indexModule)
             {
                 $module['outputFilename'] = $this->getModulePath($destDir, 'index', '.html');
                 $indexFilename = $module['outputFilename'];
             }
             else
             {
-                $module['outputFilename'] = $this->getModulePath($destDir, $module['moduleName'], '.html');
+                $module['outputFilename'] = $this->getModulePath($destDir, $module['name'], '.html');
                 if (empty($indexFilename))
                 {
                     $indexFilename = $module['outputFilename'];
@@ -33,10 +33,16 @@ class LocalHTMLGenerator extends GeneratorBase
 
         foreach ($modules as $key => $module)
         {
-            $moduleName = $module['moduleName'];
-            $functions = $module['tags']['functions'];
+            $moduleName = $module['name'];
+            $module['doc'] = file_get_contents($srcFilesDir . DS . $module['filename']);
+            $functions = array();
 
-            printf("proces module %s ... ", $module['moduleName']);
+            foreach ($module['functions'] as $_ => $fn)
+            {
+                $functions[] = array('name' => $fn['name'], 'doc' => file_get_contents($srcFilesDir . DS . $fn['filename']));
+            }
+
+            printf("proces module %s ... ", $moduleName);
             ob_start();
             require($templatePath);
             $contents = ob_get_clean();

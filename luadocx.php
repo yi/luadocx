@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ALL);
+
 define('LUADOCX_VERSION', '1.2');
 define('DS', DIRECTORY_SEPARATOR);
 
@@ -132,7 +134,7 @@ if ($params['command'] == 'extract')
 }
 else if ($params['command'] == 'generate')
 {
-    $modules = json_decode(file_get_contents($params['srcFilesDir'] . DS . 'modules.json'), true);
+    $modules = json_decode(file_get_contents($params['srcFilesDir'] . DS . 'structure.json'), true);
     require_once(__DIR__ . '/inc/LocalHTMLGenerator.php');
     $generator = new LocalHTMLGenerator($config, $modules);
     $generator->execute($params['srcFilesDir'], $params['destDir']);

@@ -24,11 +24,11 @@
           <ul>
 <?php
 foreach ($modules as $linkModule):
-if ($linkModule['moduleName'] == $moduleName):
+if ($linkModule['name'] == $moduleName):
 ?>
-            <li><strong><?php echo htmlspecialchars($config->packageName . $linkModule['moduleName']); ?></strong></li>
+            <li><strong><?php echo htmlspecialchars($config->packageName . $linkModule['name']); ?></strong></li>
 <?php else: ?>
-            <li><a href="<?php echo $linkModule['outputFilename']; ?>"><?php echo htmlspecialchars($config->packageName . $linkModule['moduleName']); ?></a></li>
+            <li><a href="<?php echo $linkModule['outputFilename']; ?>"><?php echo htmlspecialchars($config->packageName . $linkModule['name']); ?></a></li>
 <?php
 endif;
 endforeach;
@@ -46,11 +46,7 @@ endforeach;
           <div id="module_doc">
 
 <?php
-foreach ($module['tags']['moduleDocs'] as $offset => $moduleDoc)
-{
-  echo markdown($moduleDoc);
-  echo "\n<br />\n\n";
-}
+echo markdown($module['doc']);
 ?>
 
           </div>

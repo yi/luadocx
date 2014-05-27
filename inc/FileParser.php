@@ -15,7 +15,7 @@ class FileParser
     public function __construct()
     {
         $functionName               = "([\w\d_:\.]+)";
-        $functionParams             = "([\w\d_,\. ]*)";
+        $functionParams             = "([_x80-xff\w\d_,\. ]*)";
         $this->parseFunctionArray[] = "/function[ \t]+${functionName}[ \t]*\(${functionParams}\)/i";
         $this->parseFunctionArray[] = "/${functionName}[ \t]*=[ \t]*function[ \t]*\(${functionParams}\)/i";
     }
@@ -136,7 +136,7 @@ class FileParser
             if ($line == '') continue;
 
             $matches = array();
-            if (preg_match("/\@(\w+)([ \t]+[\w\d_,\. ]+)?/i", $line, $matches) == 0) continue;
+            if (preg_match("/\@(\w+)([ \t]+.+)?/i", $line, $matches) == 0) continue;
 
             $tag = array(
                 "name" => $matches[1],

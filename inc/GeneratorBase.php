@@ -60,13 +60,13 @@ abstract class GeneratorBase
 
     protected function compareTwoModule($one, $two)
     {
-        $oneDepth = substr_count($one['moduleName'], '.');
-        $twoDepth = substr_count($two['moduleName'], '.');
-        if ($oneDepth == 0 && $twoDepth == 0) return strcmp($one['moduleName'], $two['moduleName']);
+        $oneDepth = substr_count($one['name'], '.');
+        $twoDepth = substr_count($two['name'], '.');
+        if ($oneDepth == 0 && $twoDepth == 0) return strcmp($one['name'], $two['name']);
         if ($oneDepth == 0) return -1;
         if ($twoDepth == 0) return 1;
 
-        return strcmp($one['moduleName'], $two['moduleName']);
+        return strcmp($one['name'], $two['name']);
     }
 
     protected function copyFile($srcDir, $destDir, $filename)
