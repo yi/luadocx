@@ -38,9 +38,8 @@ class MarkdownGenerator extends GeneratorBase
         {
             $module = $this->modules[$i];
             $moduleName = $module['moduleName'];
-            $moduleFilename = $moduleName . '.md';
             $moduleStructure = array(
-                'name' => $moduleName,
+                'moduleName' => $moduleName,
                 'filename' => $this->getModuleFilename($moduleName, '.md'),
             );
 
@@ -50,6 +49,8 @@ class MarkdownGenerator extends GeneratorBase
             {
                 $functionsStructure[] = array(
                     'name' => $function['name'],
+                    'params' => $function['params'],
+                    'description' => $function['description'],
                     'filename' => $this->getModuleFunctionFilename($moduleName, $function['name'], '.md'),
                 );
             }

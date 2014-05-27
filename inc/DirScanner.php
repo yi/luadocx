@@ -55,7 +55,6 @@ class DirScanner
 
         foreach ($modules as $key => $module)
         {
-            printf("process %s\n", $module['moduleName']);
             $parser = new FileParser();
             $module['tags'] = $parser->parse($module['path']);
             $modules[$key] = $module;

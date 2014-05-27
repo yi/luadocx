@@ -15,14 +15,16 @@ class LocalHTMLGenerator extends GeneratorBase
         $indexFilename = '';
         foreach ($modules as $key => $module)
         {
-            if ($module['name'] == $this->config->indexModule)
+            if ($module['moduleName'] == $this->config->indexModule)
             {
-                $module['outputFilename'] = $this->getModulePath($destDir, 'index', '.html');
+                $module['outputFilename'] = $this->getModuleFilename('index', '.html');
+                $module['outputPath'] = $this->getModulePath($destDir, 'index', '.html');
                 $indexFilename = $module['outputFilename'];
             }
             else
             {
-                $module['outputFilename'] = $this->getModulePath($destDir, $module['name'], '.html');
+                $module['outputFilename'] = $this->getModuleFilename($module['moduleName'], '.html');
+                $module['outputPath'] = $this->getModulePath($destDir, $module['moduleName'], '.html');
                 if (empty($indexFilename))
                 {
                     $indexFilename = $module['outputFilename'];
@@ -33,21 +35,21 @@ class LocalHTMLGenerator extends GeneratorBase
 
         foreach ($modules as $key => $module)
         {
-            $moduleName = $module['name'];
+            $moduleName = $module['moduleName'];
             $module['doc'] = file_get_contents($srcFilesDir . DS . $module['filename']);
-            $functions = array();
+            $functions = $module['functions'];
 
-            foreach ($module['functions'] as $_ => $fn)
+            foreach ($functions as $offset => $fn)
             {
-                $functions[] = array('name' => $fn['name'], 'doc' => file_get_contents($srcFilesDir . DS . $fn['filename']));
+                $functions[$offset]['doc'] = file_get_contents($srcFilesDir . DS . $fn['filename']);
             }
 
-            printf("proces module %s ... ", $moduleName);
+            printf("process module %s ... ", $moduleName);
             ob_start();
             require($templatePath);
             $contents = ob_get_clean();
             print("ok\n");
-            file_put_contents($module['outputFilename'], $contents);
+            file_put_contents($module['outputPath'], $contents);
         }
 
         print("copy assets ... ");

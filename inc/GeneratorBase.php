@@ -1,11 +1,10 @@
 <?php
 
-require_once(__DIR__ . '/Markdown.php');
+require_once(__DIR__ . '/Michelf/MarkdownExtra.inc.php');
 
 function markdown($contents)
 {
-    $markdown = new MarkdownExtra();
-    return $markdown->transform($contents);
+    return \Michelf\MarkdownExtra::defaultTransform($contents);
 }
 
 function linkToModule($moduleName)
@@ -48,25 +47,23 @@ abstract class GeneratorBase
             array_shift($parts);
             $functionName = implode('.', $parts);
         }
-        return strtolower(str_replace($this->chars, '_', $moduleName . '_function_' . $functionName))
-        . $extname;
+        return strtolower(str_replace($this->chars, '_', $moduleName . '_function_' . $functionName)) . $extname;
     }
 
     protected function getModuleFunctionPath($destDir, $moduleName, $functionName, $extname)
     {
-        return $destDir . DS . $this->getModuleFunctionFilename($moduleName,
-            $functionName, $extname);
+        return $destDir . DS . $this->getModuleFunctionFilename($moduleName, $functionName, $extname);
     }
 
     protected function compareTwoModule($one, $two)
     {
-        $oneDepth = substr_count($one['name'], '.');
-        $twoDepth = substr_count($two['name'], '.');
-        if ($oneDepth == 0 && $twoDepth == 0) return strcmp($one['name'], $two['name']);
+        $oneDepth = substr_count($one['moduleName'], '.');
+        $twoDepth = substr_count($two['moduleName'], '.');
+        if ($oneDepth == 0 && $twoDepth == 0) return strcmp($one['moduleName'], $two['moduleName']);
         if ($oneDepth == 0) return -1;
         if ($twoDepth == 0) return 1;
 
-        return strcmp($one['name'], $two['name']);
+        return strcmp($one['moduleName'], $two['moduleName']);
     }
 
     protected function copyFile($srcDir, $destDir, $filename)

@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . "/Markdown.php");
+require_once(__DIR__ . "/Michelf/MarkdownExtra.inc.php");
 
 class FileParser
 {
@@ -14,10 +14,10 @@ class FileParser
 
     public function __construct()
     {
-        $functionName               = "([\w\d_:\.]+)";
-        $functionParams             = "([_x80-xff\w\d_,\. ]*)";
-        $this->parseFunctionArray[] = "/function[ \t]+${functionName}[ \t]*\(${functionParams}\)/i";
-        $this->parseFunctionArray[] = "/${functionName}[ \t]*=[ \t]*function[ \t]*\(${functionParams}\)/i";
+        $functionName               = '([\w\d_:\.]+)';
+        $functionParams             = '([_x80-xff\w\d_,\. ]*)';
+        $this->parseFunctionArray[] = "/function[ \t]+${functionName}[ \t]*\\(${functionParams}\\)/i";
+        $this->parseFunctionArray[] = "/${functionName}[ \t]*=[ \t]*function[ \t]*\\(${functionParams}\\)/i";
     }
 
     public function parse($filename)
@@ -109,8 +109,11 @@ class FileParser
             }
         }
 
-        return array('moduleDocs' => $this->moduleDocs, 'moduleTags' => $this->moduleTags,
-            'functions' => $this->functions);
+        return array(
+            'moduleDocs' => $this->moduleDocs,
+            'moduleTags' => $this->moduleTags,
+            'functions' => $this->functions
+        );
     }
 
     private function findFirstLine($contents)
@@ -151,7 +154,7 @@ class FileParser
             {
                 $a = array_slice($lines, 0, $i);
                 array_push($a, '');
-                array_push($a, '### Parameters');
+                array_push($a, '#### Parameters');
                 array_push($a, '');
                 $lines = array_merge($a, array_slice($lines, $i));
                 $firstParam = false;
@@ -162,7 +165,7 @@ class FileParser
             {
                 $a = array_slice($lines, 0, $i);
                 array_push($a, '');
-                array_push($a, '### Returns');
+                array_push($a, '#### Returns');
                 array_push($a, '');
                 $lines = array_merge($a, array_slice($lines, $i));
                 $firstParam = false;
@@ -201,9 +204,6 @@ class FileParser
 
             case 'return':
                 return '-   ' . trim($tag['value']);
-
-            case 'example':
-                return '### Example';
         }
 
         return $line;

@@ -24,11 +24,11 @@
           <ul>
 <?php
 foreach ($modules as $linkModule):
-if ($linkModule['name'] == $moduleName):
+if ($linkModule['moduleName'] == $moduleName):
 ?>
-            <li><strong><?php echo htmlspecialchars($config->packageName . $linkModule['name']); ?></strong></li>
+            <li><strong><?php echo htmlspecialchars($config->packageName . $linkModule['moduleName']); ?></strong></li>
 <?php else: ?>
-            <li><a href="<?php echo $linkModule['outputFilename']; ?>"><?php echo htmlspecialchars($config->packageName . $linkModule['name']); ?></a></li>
+            <li><a href="<?php echo $linkModule['outputFilename']; ?>"><?php echo htmlspecialchars($config->packageName . $linkModule['moduleName']); ?></a></li>
 <?php
 endif;
 endforeach;
@@ -38,8 +38,6 @@ endforeach;
         </td> <!-- navigation -->
 
         <td id="content">
-
-          <h1>Module <code><?php echo htmlspecialchars($moduleName); ?></code></h1>
 
           <!-- BEGIN module doc -->
 
@@ -57,8 +55,12 @@ echo markdown($module['doc']);
 
           <!--  BEGIN functions index -->
 
-          <h2>Functions</h2>
+
           <table class="function_list">
+
+              <tr>
+                  <th colspan="2">Functions</th>
+              </tr>
 
 <?php
 $anchors = array();
@@ -76,13 +78,16 @@ foreach ($functions as $offset => $function):
   }
   $functions[$offset]['anchorName'] = $anchorName;
   $indent = (strpos($function['name'], ':')) ? '&nbsp;-&nbsp;&nbsp;' : '';
-  $functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
+  $functionName = htmlspecialchars(sprintf('%s(%s)', $function['name'], $function['params']));
   $functionName = str_replace(' ', '&nbsp;', $functionName);
 ?>
 
             <tr>
-              <td class="name" nowrap><?php echo $indent; ?><a href="#<?php echo $anchorName; ?>"><?php echo $functionName; ?></a></td>
-              <td class="summary"><?php echo htmlspecialchars($function['description']); ?></td>
+              <td class="name" nowrap colspan="2"><?php echo $indent; ?><a href="#<?php echo $anchorName; ?>"><?php echo $functionName; ?></a></td>
+            </tr>
+
+            <tr>
+              <td class="summary" colspan="2"><?php echo htmlspecialchars($function['description']); ?></td>
             </tr>
 
 <?php endforeach; ?>
@@ -91,8 +96,6 @@ foreach ($functions as $offset => $function):
 
           <!--  END functions index -->
 
-          <br />
-          <br />
 
           <!-- BEGIN functions details -->
 
@@ -108,10 +111,12 @@ foreach ($functions as $offset => $function):
   $functionName = htmlspecialchars(sprintf('%s (%s)', $function['name'], $function['params']));
 ?>
 
-            <dt class="<?php echo $class; ?>">
-              <?php echo $indent; ?><a name="<?php echo $anchorName; ?>"></a>
-              <h3><?php echo $functionName; ?></h3>
-            </dt>
+<!--            <dt class="--><?php //echo $class; ?><!--">-->
+<!--              --><?php //echo $indent; ?><!--<a name="--><?php //echo $anchorName; ?><!--"></a>-->
+<!--              <h3>--><?php //echo $functionName; ?><!--</h3>-->
+<!--            </dt>-->
+
+            <a name="<?php echo $anchorName; ?>"></a>
 
             <dd class="<?php echo $class; ?>">
 

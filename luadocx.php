@@ -1,6 +1,7 @@
 <?php
 
 error_reporting(E_ALL);
+date_default_timezone_set('Asia/Chongqing');
 
 define('LUADOCX_VERSION', '1.2');
 define('DS', DIRECTORY_SEPARATOR);
@@ -124,6 +125,7 @@ if ($params['command'] == 'extract')
     require_once(__DIR__ . '/inc/DirScanner.php');
     $scanner = new DirScanner($config, $params);
     $modules = $scanner->execute();
+    file_put_contents($params['destDir'] . DS . 'modules.json', json_encode($modules));
 
     require_once(__DIR__ . '/inc/MarkdownGenerator.php');
     $generator = new MarkdownGenerator($config, $modules);

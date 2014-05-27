@@ -1,5 +1,5 @@
 
-## <?php echo $function['name']; ?>()
+### <?php echo $function['name']; ?>()
 
 > <?php echo sprintf('%s(%s)', $function['name'], $function['params']); ?>
 
