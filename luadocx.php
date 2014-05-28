@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 date_default_timezone_set('Asia/Chongqing');
 
-define('LUADOCX_VERSION', '1.2');
+define('LUADOCX_VERSION', '1.3');
 define('DS', DIRECTORY_SEPARATOR);
 
 function help()
