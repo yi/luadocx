@@ -1,3 +1,5 @@
+#!/bin/env php
+
 <?php
 
 error_reporting(E_ALL);
