@@ -29,7 +29,15 @@ LuaDocX - Generate documents from Lua source files
 
 将 `luadocx extract` 生产出来的 `structure.json` 文件转变为 Vim snipMate 的代码片段
 
-用例：
+
+需要安装
+
+ 1. 安装 [NodeJS](http://nodejs.org/download/)
+ 2. CoffeeScript: `npm install coffee-script -g`
+ 3. 安装相关依赖 `npm install`
+
+
+用法：
 
 ```bash
  ./json2snippet.coffee -i ~/temp/json/structure.json -s
